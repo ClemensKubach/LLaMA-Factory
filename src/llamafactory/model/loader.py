@@ -110,10 +110,16 @@ def load_tokenizer(model_args: "ModelArguments") -> "TokenizerModule":
             use_fast=not model_args.use_fast_tokenizer,
             **init_kwargs,
         )
+    except OSError:
+        logger.warning(
+            f"No processor found for {str(model_args.model_name_or_path)} - continuing with tokenizer only."
+        )
+        processor = None
     except Exception as e:
         raise OSError("Failed to load processor.") from e
 
-    patch_processor(processor, tokenizer, model_args)
+    if processor is not None:
+        patch_processor(processor, tokenizer, model_args)
 
     # Avoid load tokenizer, see:
     # https://github.com/huggingface/transformers/blob/v4.40.0/src/transformers/models/auto/processing_auto.py#L324
