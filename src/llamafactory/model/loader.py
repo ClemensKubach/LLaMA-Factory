@@ -164,7 +164,13 @@ def load_model(
         init_kwargs["config"] = config
         init_kwargs["pretrained_model_name_or_path"] = model_args.model_name_or_path
         logger.info(f"init_kwargs prior: {init_kwargs}")
-        init_kwargs["device_map"] = model_args.device_map  # fix RuntimeError: Invalid device string: '0'
+        # fix RuntimeError: Invalid device string: '0'
+        # it seems like it load can not handle torch.device format
+        if isinstance(model_args.device_map, dict):
+            for k, v in model_args.device_map.items():
+                if isinstance(v, torch.device):
+                    model_args.device_map[k] = f"{v.type}:{v.index}"
+        init_kwargs["device_map"] = model_args.device_map
         logger.info(f"init_kwargs after: {init_kwargs}")
 
         if model_args.mixture_of_depths == "load":
