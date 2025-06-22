@@ -149,6 +149,7 @@ def patch_config(
 
             if init_kwargs.get("device_map", None) == "auto":
                 init_kwargs["offload_folder"] = model_args.offload_folder
+        init_kwargs["device_map"] = model_args.device_map  # fix RuntimeError: Invalid device string: '0'
 
 
 def patch_model(
