@@ -160,11 +160,12 @@ def load_model(
     if model is None and not lazy_load:
         init_kwargs["config"] = config
         init_kwargs["pretrained_model_name_or_path"] = model_args.model_name_or_path
+
         # fix RuntimeError: Invalid device string: '0'
         # it seems like it load can not handle torch.device format
         if isinstance(model_args.device_map, dict):
             for k, v in model_args.device_map.items():
-                if isinstance(v, torch.device):
+                if isinstance(v, torch.device) and v.index is not None:
                     model_args.device_map[k] = f"{v.type}:{v.index}"
         init_kwargs["device_map"] = model_args.device_map
 
