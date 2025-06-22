@@ -145,12 +145,9 @@ def load_model(
 ) -> "PreTrainedModel":
     r"""Load pretrained model."""
     init_kwargs = _get_init_kwargs(model_args)
-    logger.info(f"model_args in load_model: {model_args}")
     config = load_config(model_args)
     patch_config(config, tokenizer, model_args, init_kwargs, is_trainable)
-    logger.info(f"model_args in load_model after patch_config: {model_args}")
     apply_liger_kernel(config, model_args, is_trainable, require_logits=(finetuning_args.stage not in ["pt", "sft"]))
-    logger.info(f"model_args in load_model after apply_liger_kernel: {model_args}")
 
     model = None
     lazy_load = False
@@ -163,7 +160,6 @@ def load_model(
     if model is None and not lazy_load:
         init_kwargs["config"] = config
         init_kwargs["pretrained_model_name_or_path"] = model_args.model_name_or_path
-        logger.info(f"init_kwargs prior: {init_kwargs}")
         # fix RuntimeError: Invalid device string: '0'
         # it seems like it load can not handle torch.device format
         if isinstance(model_args.device_map, dict):
@@ -171,7 +167,6 @@ def load_model(
                 if isinstance(v, torch.device):
                     model_args.device_map[k] = f"{v.type}:{v.index}"
         init_kwargs["device_map"] = model_args.device_map
-        logger.info(f"init_kwargs after: {init_kwargs}")
 
         if model_args.mixture_of_depths == "load":
             model = load_mod_pretrained_model(**init_kwargs)
